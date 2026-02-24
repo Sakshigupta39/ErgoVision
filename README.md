@@ -37,23 +37,25 @@ It helps users maintain healthy screen habits and prevent digital strain.
 ---
 
 ## 📂 Project Structure
+
+```
 ErgoVision/
 │
 ├── backend/
-│ ├── app/
-│ │ ├── modules/
-│ │ ├── static/
-│ │ ├── templates/
-│ │ ├── app.py
-│ │ └── init.py
-│ │
-│ └── requirements.txt
+│   ├── app/
+│   │   ├── modules/
+│   │   ├── static/
+│   │   │   ├── css/
+│   │   │   └── js/
+│   │   ├── templates/
+│   │   ├── app.py
+│   │   └── __init__.py
+│   │
+│   └── requirements.txt
 │
 ├── .gitignore
 └── README.md
-
-
----
+```
 
 ## ⚙️ Setup & Run
 
