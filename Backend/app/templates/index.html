@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ErgoVision - AI Posture & Eye Health Monitor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<!-- LOGIN OVERLAY -->
+<div id="loginOverlay" class="login-overlay">
+    <div class="login-card">
+        <div class="login-logo">Ergo<span>Vision</span></div>
+        <p class="login-subtitle">AI-Powered Posture & Eye Health</p>
+        <form id="loginForm" class="login-form">
+            <label for="loginName">Your Name</label>
+            <input type="text" id="loginName" placeholder="e.g. Priya" maxlength="30" required autocomplete="off">
+            <button type="submit" class="btn btn-primary login-btn">Let's Start →</button>
+        </form>
+        <p class="login-note">No account needed — your data stays on this device.</p>
+    </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="container">
+
+    <header class="header">
+        <div class="header-left">
+            <div id="userGreeting" class="user-greeting" style="display:none;">
+                <span>👋 <span id="userName"></span></span>
+                <button id="logoutBtn" class="logout-btn" title="Sign out">✕</button>
+            </div>
+        </div>
+        <div class="header-center">
+            <h1>Ergo<span>Vision</span></h1>
+            <p class="subtitle">AI-Powered Posture & Eye Health Monitoring</p>
+        </div>
+        <div class="header-right">
+            <div class="theme-toggle" id="themeToggle">
+                <span class="toggle-icon" id="toggleIcon">☀️</span>
+                <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                <span class="toggle-label" id="toggleLabel">Light</span>
+            </div>
+            <!-- ? button — help panel is rendered at body level below -->
+            <button id="helpBtn" class="help-btn" title="Tips and Help">?</button>
+        </div>
+    </header>
+
+    <div class="main-layout">
+
+        <!-- LEFT: Settings -->
+        <div class="panel settings-panel">
+            <h2>Settings</h2>
+
+            <div class="setting-item">
+                <label for="postureThreshold">Bad Posture Alert (seconds)</label>
+                <input type="number" id="postureThreshold" min="10" max="300"
+                       value="{{ settings.bad_posture_threshold }}">
+                <button id="saveSettings" class="btn btn-secondary">Save</button>
+            </div>
+
+            <div class="setting-item">
+                <label>Audio Reminders</label>
+                <div class="sound-row">
+                    <button id="soundToggleBtn" class="btn btn-sound">
+                        <span id="soundToggleIcon">🔔</span>
+                        <span id="soundToggleText">Sound On</span>
+                    </button>
+                    <!-- Test button: unlocks AudioContext via user gesture -->
+                    <button id="soundTestBtn" class="btn-test-sound">▶ Test</button>
+                </div>
+                <p class="sound-hint">⚠ Click "Test" once first to enable audio alerts</p>
+            </div>
+
+            <div class="control-buttons">
+                <button id="startBtn" class="btn btn-primary">▶ Start Detection</button>
+                <button id="stopBtn"  class="btn btn-danger" disabled>■ Stop Detection</button>
+            </div>
+
+            <div class="info-section">
+                <h3>20-20-20 Eye Rule</h3>
+                <p>Every 20 minutes, look at something 20 feet away for 20 seconds.</p>
+            </div>
+
+            <div class="info-section">
+                <h3>Quick Tips</h3>
+                <ul>
+                    <li>Sit with your back straight</li>
+                    <li>Keep your ears aligned with shoulders</li>
+                    <li>Blink regularly to prevent eye strain</li>
+                    <li>Take breaks every 20 minutes</li>
+                </ul>
+            </div>
+
+            <!-- ONE-CLICK PDF DOWNLOAD — big green gradient button -->
+            <button id="downloadPdfBtn" class="btn-download-pdf">
+                📥 Download PDF Report
+            </button>
+
+            <button id="exportBtn" class="btn btn-secondary export-btn">
+                📄 Export Last Report
+            </button>
+        </div>
+
+        <!-- CENTER: Video + Chart -->
+        <div class="panel video-panel">
+            <div class="video-container">
+                <img id="videoFeed" src="" alt="Webcam feed">
+                <div id="noVideo" class="no-video">
+                    <p>Click "Start Detection" to begin monitoring</p>
+                </div>
+            </div>
+            <div class="chart-wrap">
+                <div class="chart-label">Posture History <span>(last 60s)</span></div>
+                <canvas id="postureChart" class="posture-chart"></canvas>
+            </div>
+        </div>
+
+        <!-- RIGHT: Live Stats -->
+        <div class="panel stats-panel">
+            <h2>Live Statistics</h2>
+            <div id="alertBox" class="alert-box" style="display:none;"></div>
+            <div class="stat-card">
+                <h3>Posture Status</h3>
+                <div id="postureStatus" class="status-value">Not Active</div>
+            </div>
+            <div class="stat-card">
+                <h3>Head Angle</h3>
+                <div id="headAngle" class="stat-value">0°</div>
+            </div>
+            <div class="stat-card">
+                <h3>Posture Time</h3>
+                <div class="stat-row">
+                    <span class="stat-label">Good:</span>
+                    <span id="goodPostureTime" class="stat-value">0s</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Bad:</span>
+                    <span id="badPostureTime" class="stat-value">0s</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <h3>Blink Statistics</h3>
+                <div class="stat-row">
+                    <span class="stat-label">Total Blinks:</span>
+                    <span id="totalBlinks" class="stat-value">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Blink Rate:</span>
+                    <span id="blinkRate" class="stat-value">0/min</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <h3>Fatigue Level</h3>
+                <div id="fatigueLevel" class="stat-value">Normal</div>
+            </div>
+            <div class="stat-card eye-rule-card">
+                <h3>20-20-20 Eye Rule</h3>
+                <div id="eyeRuleMessage" class="stat-value">Not Started</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!--
+    HELP PANEL — placed at body root, NOT inside .header or .panel
+    This prevents it from being clipped by any parent's overflow:hidden
+    z-index: 99999 ensures it always floats above everything
+-->
+<div id="helpPanel" class="help-panel">
+    <button id="helpClose" class="help-close">✕</button>
+    <div class="help-tip-icon"  id="helpTipIcon">📸</div>
+    <div class="help-tip-title" id="helpTipTitle"></div>
+    <div class="help-tip-text"  id="helpTipText"></div>
+    <div class="help-nav">
+        <button id="helpPrev" class="help-nav-btn">‹</button>
+        <div    id="helpDots" class="help-dots"></div>
+        <button id="helpNext" class="help-nav-btn">›</button>
+    </div>
+</div>
+
+<!-- Session Summary Modal -->
+<div id="summaryModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Session Summary</h2>
+        <div id="summaryContent"></div>
+        <button id="downloadReportBtn" class="btn-download-pdf" style="margin-top:14px;">
+            📥 Download PDF Report
+        </button>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>
