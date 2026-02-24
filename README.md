@@ -61,8 +61,10 @@ ErgoVision/
 
 ### 1️⃣ Clone the repository
 
+```
 git clone https://github.com/Sakshigupta39/ErgoVision.git
 cd ErgoVision/backend
+```
 
 ### 2️⃣ Create Virtual Environment
 
