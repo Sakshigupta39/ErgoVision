@@ -61,17 +61,17 @@ ErgoVision/
 
 ### 1️⃣ Clone the repository
 
-git clone https://github.com/yourusername/ErgoVision.git
+git clone https://github.com/Sakshigupta39/ErgoVision.git
 cd ErgoVision/backend
 
 ### 2️⃣ Create Virtual Environment
 
 python -m venv venv
+
 Activate:
+#### Windows: venv\Scripts\activate
 
-Windows: venv\Scripts\activate
-
-Mac/Linux: source venv/bin/activate
+#### Mac/Linux: source venv/bin/activate
 
 ### 3️⃣ Install Dependencies
 
@@ -86,9 +86,7 @@ Open in browser: http://127.0.0.1:5000
 With increasing screen time, poor posture and reduced blinking lead to:
 
 Eye strain
-
 Neck pain
-
 Digital fatigue
 
 ErgoVision provides a real-time AI-based solution to promote healthier screen usage.
