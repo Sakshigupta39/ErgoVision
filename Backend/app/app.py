@@ -59,41 +59,38 @@ def release_camera():
 def generate_frames():
     """Generator function to stream video frames with pose landmarks"""
     global detection_active
-    cam = get_camera()
 
     while detection_active:
-                
-            success, frame = video_capture.read()
-            if not success:
-                break
+
+        cam = get_camera()       
+        success, frame = cam.read()
+        if not success:
+            break
             
-            # Flip frame horizontally for mirror effect
-            frame = cv2.flip(frame, 1)
+        # Flip frame horizontally for mirror effect
+        frame = cv2.flip(frame, 1)
             
-            # Process frame for posture detection
-            frame, posture_data = posture_detector.process_frame(frame)
+        # Process frame for posture detection
+        frame, posture_data = posture_detector.process_frame(frame)
             
-            # Process frame for blink detection
-            frame, blink_data = blink_detector.process_frame(frame)
+        # Process frame for blink detection
+        frame, blink_data = blink_detector.process_frame(frame)
             
-            # Update current session data
-            if current_session:
-                with detection_lock:
-                    current_session['posture_data'] = posture_data
-                    current_session['blink_data'] = blink_data
-                    current_session['eye_rule_status'] = eye_rule_timer.get_status()
+        # Update current session data
+        if current_session:
+            with detection_lock:
+                current_session['posture_data'] =posture_data
+                current_session['blink_data'] =blink_data
+                current_session['eye_rule_status'] = eye_rule_timer.get_status()
             
-            # Encode frame to JPEG
-            ret, buffer = cv2.imencode('.jpg', frame)
-            frame = buffer.tobytes()
+        # Encode frame to JPEG
+        ret, buffer = cv2.imencode('.jpg', frame)
+        frame = buffer.tobytes()
             
-            yield (b'--frame\r\n'
-                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+        yield (b'--frame\r\n'
+            b'Content-Type: image/jpeg\r\n\r\n' +frame + b'\r\n')
     release_camera()
     
-    
-        
-
 
 @app.route('/')
 def index():
@@ -111,11 +108,11 @@ def start_detection():
     """Start detection session"""
     global detection_active, current_session
     
+    release_camera()
     with detection_lock:
         if detection_active:
-            return jsonify({'status': 'error', 'message': 'Detection already running'}), 400\
+            return jsonify({'status': 'error', 'message': 'Detection already running'}), 400
             
-        release_camera()
         detection_active = True
         
         # Initialize new session
@@ -138,16 +135,23 @@ def stop_detection():
     """Stop detection session and save data"""
     global detection_active, current_session
 
+    request_data = request.get_json() or {}          
+    user_name = request_data.get('user_name', 'Unknown')
+    print(f"DEBUG user_name received: {user_name}")
+
     with detection_lock:
         if not detection_active:
             return jsonify({'status': 'error', 'message': 'No active detection'}), 400
-        
         detection_active = False
-        time.sleep(0.3)
+
+    time.sleep(0.8)
+    release_camera()
         
         # Calculate session duration
+    with detection_lock:
         if current_session:
             current_session['end_time'] = datetime.now()
+            current_session['user_name'] = user_name
             duration = (current_session['end_time'] - current_session['start_time']).total_seconds()
             current_session['duration'] = duration
             

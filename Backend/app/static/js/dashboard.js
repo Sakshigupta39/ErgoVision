@@ -306,7 +306,8 @@ startBtn.addEventListener('click', async () => {
 stopBtn.addEventListener('click', async () => {
     try {
         stopBtn.disabled = true;
-        const res  = await fetch('/stop', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+        const userName = localStorage.getItem('ergovision-user') || 'Unknown';
+        const res = await fetch('/stop', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_name: userName }) });
         const data = await res.json();
         if (data.status === 'success') {
             detectionActive         = false;

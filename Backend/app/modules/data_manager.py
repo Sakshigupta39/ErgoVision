@@ -24,6 +24,7 @@ class DataManager:
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS sessions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_name TEXT DEFAULT 'Unknown',
                 start_time TEXT NOT NULL,
                 end_time TEXT NOT NULL,
                 duration REAL NOT NULL,
@@ -54,8 +55,8 @@ class DataManager:
                 start_time, end_time, duration,
                 good_posture_time, bad_posture_time,
                 total_blinks, blink_rate, fatigue_level,
-                head_angle, posture_status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                head_angle, posture_status, user_name
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             session_data['start_time'].isoformat(),
             session_data['end_time'].isoformat(),
@@ -66,7 +67,8 @@ class DataManager:
             blink_data.get('blink_rate', 0),
             blink_data.get('fatigue_level', 'Normal'),
             posture_data.get('head_angle', 0),
-            posture_data.get('status', 'Unknown')
+            posture_data.get('status', 'Unknown'),
+            session_data.get('user_name', 'Unknown')
         ))
         
         session_id = cursor.lastrowid
@@ -131,6 +133,9 @@ class DataManager:
             spaceAfter=30
         )
         story.append(Paragraph('ErgoVision Session Report', title_style))
+
+        user_name = session_data.get('user_name', 'Unknown')   # ← add
+        story.append(Paragraph(f'Report for: <b>{user_name}</b>', styles['Normal']))  # ← add
         story.append(Spacer(1, 0.2*inch))
         
         # Session Information
