@@ -34,18 +34,18 @@
     const nameSpan = document.getElementById('userName');
     const logoutBtn= document.getElementById('logoutBtn');
 
-    const saved = localStorage.getItem('ergovision-user');
+    const saved = sessionStorage.getItem('ergovision-user');
     saved ? showApp(saved) : showLogin();
 
     form.addEventListener('submit', (e) => {
         e.preventDefault();
         const n = nameInp.value.trim();
         if (!n) return;
-        localStorage.setItem('ergovision-user', n);
+        sessionStorage.setItem('ergovision-user', n);
         showApp(n);
     });
     logoutBtn.addEventListener('click', () => {
-        localStorage.removeItem('ergovision-user');
+        sessionStorage.removeItem('ergovision-user');
         showLogin();
     });
 
@@ -54,21 +54,6 @@
 })();
 
 
-// ══════════════════════════════════════════════════════════
-// SOUND MANAGER
-//
-// WHY SOUND WASN'T WORKING:
-// Browsers enforce an "autoplay policy" — AudioContext starts in
-// "suspended" state and can only be resumed after a direct user
-// gesture (click, keypress, etc.).
-// Automated alerts from setInterval() do NOT count as user gestures.
-//
-// FIX: We create & resume AudioContext on the very first user click
-// anywhere on the page, storing it in `audioCtx`. After that,
-// automated alerts can call `audioCtx.resume()` safely.
-//
-// NO SOUND FILES NEEDED — all tones are synthesised by Web Audio API.
-// ══════════════════════════════════════════════════════════
 const SoundManager = (function () {
     let enabled  = localStorage.getItem('ergovision-sound') !== 'false';
     let audioCtx = null;
@@ -284,28 +269,121 @@ const modal             = document.getElementById('summaryModal');
 const closeModal        = document.querySelector('.close');
 const downloadReportBtn = document.getElementById('downloadReportBtn');
 
+// ── WEBCAM CAPTURE (browser-side) ─────────────────────────
+const webcamVideo = document.getElementById('webcamVideo');
+const captureCanvas = document.getElementById('captureCanvas');
+let webcamStream = null;
+
+async function startWebcam() {
+    try {
+        webcamStream = await navigator.mediaDevices.getUserMedia({
+            video: { width: 640, height: 480 }
+        });
+        webcamVideo.srcObject = webcamStream;
+        console.log('Webcam started successfully');
+        return true;
+    } catch (err) {
+        console.error('Webcam access failed:', err);
+        alert('Could not access webcam: ' + err.message);
+        return false;
+    }
+}
+
+function stopWebcam() {
+    if (webcamStream) {
+        webcamStream.getTracks().forEach(track => track.stop());
+        webcamStream = null;
+    }
+}
+
+window.addEventListener('beforeunload', () => {
+    stopWebcam();
+    // Tell the server too, so it doesn't stay stuck thinking detection
+    // is still running. sendBeacon works reliably even as the page is
+    // closing (a normal fetch() might get cancelled mid-flight).
+    if (detectionActive) {
+        navigator.sendBeacon('/stop', new Blob(
+            [JSON.stringify({ user_name: sessionStorage.getItem('ergovision-user') || 'Unknown' })],
+            { type: 'application/json' }
+        ));
+    }
+});
+
 // ── Start ────────────────────────────────────────────────
 startBtn.addEventListener('click', async () => {
     try {
+        const camOk = await startWebcam();
+        if (!camOk) return;
+
         const res  = await fetch('/start', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
         const data = await res.json();
         if (data.status === 'success') {
             detectionActive         = true;
             startBtn.disabled       = true;
             stopBtn.disabled        = false;
-            videoFeed.src           = '/video_feed';
             videoFeed.style.display = 'block';
             noVideo.style.display   = 'none';
             SoundManager.success();
             startStatsPolling();
+            startFrameLoop();   // start sending frames
         } else { alert('Error: ' + data.message); }
-    } catch (e) { alert('Failed to start detection'); }
+    } catch (e) {
+    stopWebcam();   // don't leave the camera running if /start failed
+    alert('Failed to start detection. Please check your connection and try again.');
+}
 });
+
+let frameLoopActive = false;
+``
+function startFrameLoop() {
+    captureCanvas.width = 640;
+    captureCanvas.height = 480;
+    frameLoopActive = true;
+    sendNextFrame();
+}
+
+// Stops the frame-sending loop immediately. Called the instant Stop is
+// clicked (not after /stop resolves), so no stray frames get sent once
+// the user has asked detection to stop.
+function stopFrameLoop() {
+    frameLoopActive = false;
+}
+
+async function sendNextFrame() {
+    if (!frameLoopActive || !detectionActive) return;
+
+    if (webcamVideo.readyState >= 2) {
+        const ctx = captureCanvas.getContext('2d');
+        ctx.drawImage(webcamVideo, 0, 0, 640, 480);
+        const imageData = captureCanvas.toDataURL('image/jpeg', 0.7);
+
+        try {
+            const res = await fetch('/process_frame', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: imageData })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                videoFeed.src = data.image;
+            }
+        } catch (e) {
+            console.error('Frame processing error:', e);
+        }
+    }
+
+    // Only schedule the NEXT frame after this one is fully done
+    if (frameLoopActive) {
+        setTimeout(sendNextFrame, 150);
+    }
+}
 
 // ── Stop ─────────────────────────────────────────────────
 stopBtn.addEventListener('click', async () => {
     try {
         stopBtn.disabled = true;
+        stopFrameLoop();   // stop sending frames immediately, before the /stop request even goes out
+        stopWebcam();
         const userName = localStorage.getItem('ergovision-user') || 'Unknown';
         const res = await fetch('/stop', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_name: userName }) });
         const data = await res.json();

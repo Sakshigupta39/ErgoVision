@@ -132,7 +132,7 @@ class DataManager:
             textColor=colors.HexColor('#2C3E50'),
             spaceAfter=30
         )
-        story.append(Paragraph('ErgoVision Session Report', title_style))
+        story.append(Paragraph('Align & Blink Session Report', title_style))
 
         user_name = session_data.get('user_name', 'Unknown')   # ← add
         story.append(Paragraph(f'Report for: <b>{user_name}</b>', styles['Normal']))  # ← add

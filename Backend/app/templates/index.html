@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ErgoVision - AI Posture & Eye Health Monitor</title>
+    <title>Align & Blink - AI Posture & Eye Health Monitor</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
@@ -11,7 +11,7 @@
 <!-- LOGIN OVERLAY -->
 <div id="loginOverlay" class="login-overlay">
     <div class="login-card">
-        <div class="login-logo">Ergo<span>Vision</span></div>
+        <div class="login-logo">Align & <span>Blink</span></div>
         <p class="login-subtitle">AI-Powered Posture & Eye Health</p>
         <form id="loginForm" class="login-form">
             <label for="loginName">Your Name</label>
@@ -33,7 +33,7 @@
             </div>
         </div>
         <div class="header-center">
-            <h1>Ergo<span>Vision</span></h1>
+            <h1>Align & <span>Blink</span></h1>
             <p class="subtitle">AI-Powered Posture & Eye Health Monitoring</p>
         </div>
         <div class="header-right">
@@ -106,6 +106,9 @@
         <!-- CENTER: Video + Chart -->
         <div class="panel video-panel">
             <div class="video-container">
+                <video id="webcamVideo" autoplay playsinline muted
+                    style="position:absolute; width:1px; height:1px; opacity:0; pointer-events:none;"></video>
+                <canvas id="captureCanvas" style="display:none;"></canvas>
                 <img id="videoFeed" src="" alt="Webcam feed">
                 <div id="noVideo" class="no-video">
                     <p>Click "Start Detection" to begin monitoring</p>
