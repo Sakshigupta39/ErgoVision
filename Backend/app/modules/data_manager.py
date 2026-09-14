@@ -15,6 +15,7 @@ class DataManager:
     
     def __init__(self, db_path='sessions.db'):
         self.db_path = db_path
+        self.initialize_db()
     
     def initialize_db(self):
         """Initialize SQLite database"""
