@@ -384,7 +384,7 @@ stopBtn.addEventListener('click', async () => {
         stopBtn.disabled = true;
         stopFrameLoop();   // stop sending frames immediately, before the /stop request even goes out
         stopWebcam();
-        const userName = localStorage.getItem('ergovision-user') || 'Unknown';
+        const userName = sessionStorage.getItem('ergovision-user') || 'Unknown';
         const res = await fetch('/stop', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_name: userName }) });
         const data = await res.json();
         if (data.status === 'success') {
