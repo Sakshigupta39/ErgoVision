@@ -128,7 +128,7 @@ class BlinkDetector:
                     self.consecutive_frames += 1
                 else:
                     if (
-                        self.consecutive_frames >= 2 and
+                        self.consecutive_frames >= 1 and
                         (current_time - self.last_blink_time) > self.min_blink_interval
                     ):
                         self.total_blinks += 1
