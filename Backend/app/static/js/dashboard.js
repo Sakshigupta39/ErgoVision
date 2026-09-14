@@ -45,8 +45,25 @@
         showApp(n);
     });
     logoutBtn.addEventListener('click', () => {
-        sessionStorage.removeItem('ergovision-user');
-        showLogin();
+    stopFrameLoop();
+    stopWebcam();
+    if (detectionActive) {
+        fetch('/stop', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_name: sessionStorage.getItem('ergovision-user') || 'Unknown' })
+        });
+        detectionActive = false;
+    }
+    stopStatsPolling();
+    videoFeed.style.display = 'none';
+    videoFeed.src = '';
+    noVideo.style.display = 'block';
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+
+    sessionStorage.removeItem('ergovision-user');
+    showLogin();
     });
 
     function showApp(name) { overlay.style.display = 'none'; greeting.style.display = 'flex'; nameSpan.textContent = name; }
