@@ -144,7 +144,7 @@ class DataManager:
             ['Session ID:', str(session_data.get('id', 'N/A'))],
             ['Start Time:', session_data.get('start_time', 'N/A')],
             ['End Time:', session_data.get('end_time', 'N/A')],
-            ['Duration:', f"{session_data.get('duration', 0):.1f} seconds"]
+            ['Duration:', f"{int(session_data.get('duration', 0)) // 60}m {int(session_data.get('duration', 0)) % 60}s"]
         ]
         
         info_table = Table(session_info, colWidths=[2*inch, 4*inch])

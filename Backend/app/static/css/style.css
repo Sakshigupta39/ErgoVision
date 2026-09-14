@@ -382,6 +382,17 @@ body {
 
 .control-buttons { display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
 
+.privacy-note {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    background: var(--accent-light);
+    border: 1px solid rgba(15,107,92,0.2);
+    border-radius: var(--radius-sm);
+    padding: 8px 11px;
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
 /* Info sections */
 .info-section {
     margin-top: 8px; padding: 11px 13px;

@@ -418,9 +418,13 @@ saveSettingsBtn.addEventListener('click', async () => {
 function triggerDownload(btn, originalText) {
     btn.disabled    = true;
     btn.textContent = '⏳ Generating PDF…';
-    setTimeout(() => {
-        window.location.href = currentSessionId ? `/export?session_id=${currentSessionId}` : '/export';
-    }, 300);
+    const url = currentSessionId ? `/export?session_id=${currentSessionId}` : '/export';
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
     setTimeout(() => { btn.disabled = false; btn.textContent = originalText; }, 2500);
 }
 
@@ -431,7 +435,13 @@ exportBtn.addEventListener('click', async () => {
     exportBtn.disabled    = true;
     exportBtn.textContent = '⏳ Generating…';
     await new Promise(r => setTimeout(r, 300));
-    window.location.href = currentSessionId ? `/export?session_id=${currentSessionId}` : '/export';
+    const url = currentSessionId ? `/export?session_id=${currentSessionId}` : '/export';
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
     setTimeout(() => { exportBtn.disabled = false; exportBtn.textContent = '📄 Export Last Report'; }, 2500);
 });
 

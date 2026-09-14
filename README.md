@@ -6,6 +6,12 @@ It helps users maintain healthy screen habits and prevent digital strain.
 
 ---
 
+## 🔗 Live Demo
+
+**Try it here:** https://ergovision-zypr.onrender.com
+
+> ⚠️ Hosted on Render's free tier — if the link has been idle, the first load may take 30–60 seconds to wake up. Please allow camera access when prompted; all video processing happens on the server, only your browser accesses the webcam.
+
 ## ✨ Features
 
 - 📹 Real-time posture detection  
@@ -28,6 +34,10 @@ It helps users maintain healthy screen habits and prevent digital strain.
 - NumPy
 - ReportLab
 - SQLite
+
+## 🏗️ Architecture
+
+The browser captures webcam frames using `getUserMedia` and sends them to the Flask backend for processing (posture + blink detection via MediaPipe), which returns annotated frames and live stats. This keeps camera access entirely client-side while detection runs server-side — each visitor gets an isolated, in-memory session so multiple users can use the app concurrently without interfering with each other.
 
 **Frontend**
 - HTML
@@ -84,6 +94,8 @@ pip install -r requirements.txt
 python -m app.app
 Open in browser: http://127.0.0.1:5000
 
+> For production, the app runs via `gunicorn app.app:app --workers 1 --threads 4 --bind 0.0.0.0:$PORT` (see `Procfile`), with `FLASK_DEBUG=false` and `SECRET_KEY` set as environment variables.
+
 ### 🎯 Why ErgoVision?
 With increasing screen time, poor posture and reduced blinking lead to:
 
@@ -92,6 +104,11 @@ Neck pain
 Digital fatigue
 
 ErgoVision provides a real-time AI-based solution to promote healthier screen usage.
+
+## ⚠️ Known Limitations
+
+- Deployed on Render's free tier, which has limited CPU — detection speed and blink-count accuracy may vary under load compared to local runs.
+- Session data (SQLite) is stored in-memory/ephemeral storage and resets on server restart or redeploy; this was an accepted trade-off for the current deployment stage.
 
 # 👩‍💻 Author
 Sakshi Gupta
