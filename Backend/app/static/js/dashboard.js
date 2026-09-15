@@ -54,13 +54,15 @@
             body: JSON.stringify({ user_name: sessionStorage.getItem('ergovision-user') || 'Unknown' })
         });
         detectionActive = false;
-    }
-    stopStatsPolling();
+    }   
+        stopStatsPolling();
     videoFeed.style.display = 'none';
     videoFeed.src = '';
     noVideo.style.display = 'block';
     startBtn.disabled = false;
     stopBtn.disabled = true;
+    downloadPdfBtn.disabled = false;
+    exportBtn.disabled      = false;
 
     sessionStorage.removeItem('ergovision-user');
     showLogin();
@@ -338,6 +340,8 @@ startBtn.addEventListener('click', async () => {
             detectionActive         = true;
             startBtn.disabled       = true;
             stopBtn.disabled        = false;
+            downloadPdfBtn.disabled = true;
+            exportBtn.disabled      = true;
             videoFeed.style.display = 'block';
             noVideo.style.display   = 'none';
             SoundManager.success();
@@ -407,6 +411,8 @@ stopBtn.addEventListener('click', async () => {
         if (data.status === 'success') {
             detectionActive         = false;
             setTimeout(() => { startBtn.disabled = false; }, 500);
+            downloadPdfBtn.disabled = false;
+            exportBtn.disabled      = false;
             videoFeed.style.display = 'none';
             videoFeed.src           = '';
             noVideo.style.display   = 'block';
